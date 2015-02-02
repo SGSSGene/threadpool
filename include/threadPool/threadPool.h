@@ -43,11 +43,21 @@ public:
 	/**
 	 * This will queue a new object, but will not block
 	 */
-	void queue(T t) {
+	void queue(T const& t) {
 		std::unique_lock<std::mutex> lock(ctMutex);
 		++ct;
 		blockingQueue.queue(t);
 	}
+
+	/**
+	 * This will queue a new object, but will not block
+	 */
+	void queue(T&& t) {
+		std::unique_lock<std::mutex> lock(ctMutex);
+		++ct;
+		blockingQueue.queue(std::move(t));
+	}
+
 
 	/**
 	 * Wait till queue is empty

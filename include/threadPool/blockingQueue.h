@@ -22,7 +22,7 @@ public:
 	BlockingQueue()
 		: finish(false) {
 	}
-	void queue(T t) {
+	void queue(T const& t) {
 		// Own scope for lock
 		{
 			std::unique_lock<std::mutex> lock(m);
@@ -30,7 +30,17 @@ public:
 		}
 		condition.notify_one();
 	}
-	void queue(std::queue<T> _q) {
+	void queue(T&& t) {
+		// Own scope for lock
+		{
+			std::unique_lock<std::mutex> lock(m);
+			q.push(std::move(t));
+		}
+
+		condition.notify_one();
+	}
+
+	void queue(std::queue<T> const& _q) {
 		// Own scope for lock
 		{
 			std::unique_lock<std::mutex> lock(m);
@@ -41,6 +51,18 @@ public:
 		}
 		condition.notify_all();
 	}
+	void queue(std::queue<T>&& _q) {
+		// Own scope for lock
+		{
+			std::unique_lock<std::mutex> lock(m);
+			while (_q.size() > 0) {
+				q.push(_q.front());
+				_q.pop();
+			}
+		}
+		condition.notify_all();
+	}
+
 
 	T dequeue() {
 		std::unique_lock<std::mutex> lock(m);
