@@ -1,0 +1,8 @@
+{
+	"name": "ThreadPool",
+	"projects": [
+		{ "path": "threadPool",
+			"type": "library"
+		}
+	]
+}
