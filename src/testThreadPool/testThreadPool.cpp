@@ -7,7 +7,7 @@ TEST(TestThreadPool, SimpleQueue) {
 	std::atomic_int ct(0);
 
 	ThreadPool<int> threadPool;
-	threadPool.spawnThread([&ct](int) { ++ct; sleep(1); }, 5);
+	threadPool.spawnThread([&ct](int) { ++ct; }, 5);
 
 	for (int i(0); i<10; ++i) {
 		threadPool.queue(0);
@@ -36,7 +36,7 @@ TEST(TestThreadPool, RecursiveQueue) {
 
 	ThreadPool<int> threadPool;
 	threadPool.spawnThread([&ct, &threadPool](int _ct) {
-		++ct; sleep(1);
+		++ct;
 		if (_ct > 0)
 			threadPool.queue(_ct-1);
 	}, 5);
