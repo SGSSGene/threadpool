@@ -21,6 +21,8 @@ private:
 	std::atomic_bool finish;
 	std::condition_variable threadIsEmpty;
 
+	std::vector<std::unique_ptr<std::thread>> threadList;
+
 public:
 	ThreadPool()
 		: ct(0)
@@ -85,8 +87,9 @@ public:
 		std::unique_lock<std::mutex> lock(threadCtMutex);
 		threadCt += _threadCt;
 
+		threadList.clear();
 		for (int i(0); i < _threadCt; ++i) {
-			new std::thread([this, _f]() {
+			auto p = new std::thread([this, _f]() {
 				while (true) {
 					T job = blockingQueue.dequeue();
 					if (finish) {
@@ -110,6 +113,7 @@ public:
 					}
 				}
 			});
+			threadList.push_back(std::unique_ptr<std::thread>(p));
 		}
 	}
 };
