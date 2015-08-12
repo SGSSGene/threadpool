@@ -1,5 +1,4 @@
-#ifndef THREADPOOL_H
-#define THREADPOOL_H
+#pragma once
 
 #include "blockingQueue.h"
 
@@ -13,20 +12,18 @@ template<typename T>
 class ThreadPool final {
 private:
 	BlockingQueue<T> blockingQueue;
-	std::mutex ctMutex;
-	int        ct;
+	std::mutex countMutex;
+	int        count;
 	std::condition_variable queueIsEmpty;
-	std::mutex threadCtMutex;
-	int        threadCt;
+	std::mutex threadCountMutex;
+	int        threadCount;
 	std::atomic_bool finish;
 	std::condition_variable threadIsEmpty;
 
-	std::vector<std::unique_ptr<std::thread>> threadList;
-
 public:
 	ThreadPool()
-		: ct(0)
-		, threadCt(0)
+		: count(0)
+		, threadCount(0)
 		, finish(false)
 	{}
 
@@ -34,10 +31,10 @@ public:
 	 * Will abort all threads and open jobs
 	 */
 	~ThreadPool() {
-		std::unique_lock<std::mutex> lock(threadCtMutex);
+		std::unique_lock<std::mutex> lock(threadCountMutex);
 		finish = true;
 		blockingQueue.forceFinish();
-		if (threadCt > 0) {
+		if (threadCount > 0) {
 			threadIsEmpty.wait(lock);
 		}
 	}
@@ -45,29 +42,19 @@ public:
 	/**
 	 * This will queue a new object, but will not block
 	 */
-	void queue(T const& t) {
-		std::unique_lock<std::mutex> lock(ctMutex);
-		++ct;
+	void queue(T t) {
+		std::unique_lock<std::mutex> lock(countMutex);
+		++count;
 		blockingQueue.queue(t);
 	}
-
-	/**
-	 * This will queue a new object, but will not block
-	 */
-	void queue(T&& t) {
-		std::unique_lock<std::mutex> lock(ctMutex);
-		++ct;
-		blockingQueue.queue(std::move(t));
-	}
-
 
 	/**
 	 * Wait till queue is empty
 	 *
 	 */
 	void wait() {
-		std::unique_lock<std::mutex> lock(ctMutex);
-		if (ct > 0) {
+		std::unique_lock<std::mutex> lock(countMutex);
+		if (count > 0) {
 			queueIsEmpty.wait(lock);
 		}
 	}
@@ -80,25 +67,24 @@ public:
 	 *       because they never exit.
 	 * @TODO This function can only be called when there are no jobs in the queue
 	 *
-	 * @_f       function that the threads should execute
-	 * @threadCt number of threads that should be spawned
+	 * @_f           function that the threads should execute
+	 * @_threadCount number of threads that should be spawned
 	 */
-	void spawnThread(std::function<void(T t)> _f, int _threadCt) {
-		std::unique_lock<std::mutex> lock(threadCtMutex);
-		threadCt += _threadCt;
+	void spawnThread(std::function<void(T t)> _f, int _threadCount) {
+		std::unique_lock<std::mutex> lock(threadCountMutex);
+		threadCount += _threadCount;
 
-		threadList.clear();
-		for (int i(0); i < _threadCt; ++i) {
-			auto p = new std::thread([this, _f]() {
+		for (int i(0); i < _threadCount; ++i) {
+			new std::thread([this, _f]() {
 				while (true) {
 					T job = blockingQueue.dequeue();
 					if (finish) {
 						bool threadPoolEmpty;
 						// Own scope for lock
 						{
-							std::unique_lock<std::mutex> lock(threadCtMutex);
-							--threadCt;
-							threadPoolEmpty = threadCt == 0;
+							std::unique_lock<std::mutex> lock(threadCountMutex);
+							--threadCount;
+							threadPoolEmpty = (threadCount == 0);
 						}
 						if (threadPoolEmpty) {
 							threadIsEmpty.notify_one();
@@ -106,18 +92,15 @@ public:
 						return;
 					}
 					_f(job);
-					std::unique_lock<std::mutex> lock(ctMutex);
-					--ct;
-					if (ct == 0) {
+					std::unique_lock<std::mutex> lock(countMutex);
+					--count;
+					if (count == 0) {
 						queueIsEmpty.notify_one();
 					}
 				}
 			});
-			threadList.push_back(std::unique_ptr<std::thread>(p));
 		}
 	}
 };
 
 }
-
-#endif

@@ -1,8 +1,21 @@
 {
 	"name": "ThreadPool",
+	"extDependencies": [
+		{ "name": "gtest",
+			"url": "git@78.47.95.250:aBuild/gtest",
+			"branch": "master"
+		}
+	],
+
 	"projects": [
 		{ "path": "threadPool",
 			"type": "library"
+		},
+		{
+			"path": "testThreadPool",
+			"dependencies": ["ThreadPool/threadPool", "gtest/gtest"],
+			"depLibraries": ["pthread"],
+			"type": "executable"
 		}
 	]
 }
