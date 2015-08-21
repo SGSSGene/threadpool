@@ -1,10 +1,7 @@
 {
 	"name": "ThreadPool",
 	"extDependencies": [
-		{ "name": "gtest",
-			"url": "git@78.47.95.250:aBuild/gtest",
-			"branch": "master"
-		}
+		{ "url": "git@78.47.95.250:aBuild/gtest" }
 	],
 
 	"projects": [
