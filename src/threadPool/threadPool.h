@@ -49,6 +49,16 @@ public:
 	}
 
 	/**
+	 * This function will queue full range, but will not block
+	 */
+	template<typename C>
+	void queueContainer(C const& c) {
+		for (T const& t : c ) {
+			queue(t);
+		}
+	}
+
+	/**
 	 * Wait till queue is empty
 	 *
 	 */
