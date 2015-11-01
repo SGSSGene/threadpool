@@ -6,12 +6,12 @@
 
 	"projects": [
 		{ "path": "threadPool",
-			"type": "library"
+			"type": "library",
+			"depLibraries": ["pthread"]
 		},
 		{
 			"path": "testThreadPool",
 			"dependencies": ["ThreadPool/threadPool", "gtest/gtest"],
-			"depLibraries": ["pthread"],
 			"type": "executable"
 		}
 	]
