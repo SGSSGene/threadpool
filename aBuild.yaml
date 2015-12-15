@@ -1,0 +1,11 @@
+name: ThreadPool
+extDependencies:
+  - url: git@cakeface.de:aBuild/gtest
+projects:
+  - path: threadPool
+    depLibraries:
+      - pthread
+  - path: testThreadPool
+    dependencies:
+      - ThreadPool/threadPool
+      - gtest/gtest
