@@ -12,7 +12,7 @@ template<typename T>
 class ThreadPool final {
 private:
 	BlockingQueue<T> blockingQueue;
-	std::mutex countMutex;
+	mutable std::mutex countMutex;
 	int        count;
 	std::condition_variable queueIsEmpty;
 	std::mutex threadCountMutex;
@@ -72,6 +72,11 @@ public:
 		if (count > 0) {
 			queueIsEmpty.wait(lock);
 		}
+	}
+
+	int queueSize() const {
+		std::unique_lock<std::mutex> lock(countMutex);
+		return count;
 	}
 
 	/**
