@@ -5,7 +5,3 @@ projects:
   - path: threadPool
     depLibraries:
       - pthread
-  - path: testThreadPool
-    dependencies:
-      - ThreadPool/threadPool
-      - gtest/gtest
