@@ -1,6 +1,6 @@
 name: ThreadPool
 extRepositories:
-  - url: git@cakeface.de:aBuild/gtest
+  - url: git@github.com:SGSSGene/gtest.git
 projects:
   - name: threadPool
     depLibraries:
