@@ -1,6 +1,6 @@
 name: ThreadPool
 extRepositories:
-  - url: git@github.com:SGSSGene/gtest.git
+  - url: https://github.com/SGSSGene/gtest.git
 projects:
   - name: threadPool
     depLibraries:
