@@ -58,8 +58,10 @@ public:
 	 */
 	template<typename C>
 	void queueContainer(C const& c) {
+		std::unique_lock<std::mutex> lock(countMutex);
 		for (T const& t : c ) {
-			queue(t);
+			++count;
+			blockingQueue.queue(t);
 		}
 	}
 
